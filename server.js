@@ -1,23 +1,37 @@
+﻿const dgram = require('dgram');
 const net = require('net');
 
-var sockets = Array();
+var clients = Array();
 
-const tcpServer = net.createServer(function (socket) {
-    console.log('Юзер '+ socket.localAddress + ':' + socket.localPort +' подключился');
+const udpServer = dgram.createSocket('udp4');
+
+udpServer.on('listening', () => {
+    let address = udpServer.address();
+    console.log('UDP-сервер слушает ' + address.address + ':' + address.port);
+});
+
+udpServer.on('message', (msg) => {
+    console.log('Получено сообщение (UDP): ' + msg);
+});
+
+udpServer.bind(9967, '127.0.0.1');
+
+const tcpServer = net.createServer( function (socket) {
+    console.log('Пользователь подключился');
 
     socket.setEncoding('utf8');
-    sockets.push(socket);
+
+    clients.push(socket);
 
     socket.on('data', (data) => {
-        console.log(data);
-        sockets.forEach((elem) =>{
-            elem.write(data);
+        console.log('Получено сообщение (TCP): ' +  data);
+        clients.forEach(client => {
+            client.write(data);
         });
     });
 
     socket.on('end', () => {
         console.log('Пользователь отключился');
     });
-});
 
-tcpServer.listen(1234, '127.0.0.1');
+}).listen(9966, '127.0.0.1');

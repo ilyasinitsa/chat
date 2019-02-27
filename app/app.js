@@ -1,19 +1,34 @@
 const net = require('net');
-const tcpClient = net.Socket();
+const dgram = require('dgram');
 
-var messageBox = document.getElementById('messageBox');
-var sendButton = document.getElementById('sendButton');
+var userName = document.getElementById('userName');
+var messageArea = document.getElementById('messageArea');
+var sendButtonTCP = document.getElementById('sendButtonTCP');
+var sendButtonUDP = document.getElementById('sendButtonUDP');
 var messages = document.getElementById('messages');
 
-tcpClient.connect(1234, '127.0.0.1', function() {
+var udpClient = dgram.createSocket('udp4');
+
+udpClient.on('message', (msg) => {
+    messages.innerText += msg;
+    messages.innerHTML += '<br>';
+});
+
+var tcpClient = net.createConnection(9966, '127.0.0.1', () => {
     tcpClient.setEncoding('utf8');
 
-    tcpClient.on('data', function(data) {
-        messages.innerHTML += '<b>' + data + '</b><br>' 
+    tcpClient.on('data', (data) => {
+        messages.innerText += data;
+        messages.innerHTML += '<br>';
     });
 });
 
-sendButton.addEventListener('click', function() {
-    tcpClient.write(messageBox.value);
-    messageBox.value = null;
+sendButtonTCP.addEventListener('click', () => {
+    tcpClient.write(messageArea.value);
+    messageArea.value = '';
 });
+
+sendButtonUDP.addEventListener('click', () => {
+    udpClient.send(messageArea.value, 9967, '127.0.0.1');
+    messageArea.value = '';
+})
