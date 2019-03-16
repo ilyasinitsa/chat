@@ -12,6 +12,9 @@ udpServer.on('listening', () => {
 
 udpServer.on('message', (msg) => {
     console.log('Получено сообщение (UDP): ' + msg);
+    clients.forEach(client => {
+        udpServer.send(msg, 9967, client.localAddress);
+    });
 });
 
 udpServer.bind(9967, '127.0.0.1');
@@ -20,7 +23,6 @@ const tcpServer = net.createServer( function (socket) {
     console.log('Пользователь подключился');
 
     socket.setEncoding('utf8');
-
     clients.push(socket);
 
     socket.on('data', (data) => {
