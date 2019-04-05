@@ -2,14 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>Talk!</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <b> ID: </b> <br> <input type="text" name="" id="userName"><br><br>
-    <b> Сообщение: </b> <br> <input type="text" name="" id="messageArea"><br><br>
-    <input type="button" id="sendButtonTCP" value="Отправить TCP" style="margin-right: 10px">
-    <input type="button" id="sendButtonUDP" value="Отправить UDP"><br>
-    <div id="messages"></div>
+    <main class="chat-wrapper">
+        <aside class="online-users">
+        </aside>
+
+        <article class="messages-area" id="messages">
+        </article>
+
+        <div class="text-area">
+            <input type="text" id="message-input" onkeydown="messageSend(event)">
+        </div>
+    </main>
     <script src="app.js"></script>
 </body>
 </html>

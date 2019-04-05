@@ -1,34 +1,24 @@
-const net = require('net');
-const dgram = require('dgram');
+const ipc = require('electron').ipcRenderer;
+const customTitlebar = require('@inceldes/cet');
 
-var userName = document.getElementById('userName');
-var messageArea = document.getElementById('messageArea');
-var sendButtonTCP = document.getElementById('sendButtonTCP');
-var sendButtonUDP = document.getElementById('sendButtonUDP');
+new customTitlebar.Titlebar({
+    menu: false,
+    backgroundColor: customTitlebar.Color.fromHex('#444')
+});
+
+var messageArea = document.getElementById('message-input');
+var sendButton = document.getElementById('sendButton');
 var messages = document.getElementById('messages');
 
-var udpClient = dgram.createSocket('udp4');
-
-udpClient.on('message', (msg) => {
-    messages.innerText += msg;
-    messages.innerHTML += '<br>';
+ipc.on('TCP-message-print', (event, arg) => {
+    messages.innerHTML += '<div class="message">' + JSON.parse(arg).sender + ': ' + JSON.parse(arg).content + '</div>';
 });
 
-var tcpClient = net.createConnection(9966, '127.0.0.1', () => {
-    tcpClient.setEncoding('utf8');
-
-    tcpClient.on('data', (data) => {
-        messages.innerText += data;
-        messages.innerHTML += '<br>';
-    });
-});
-
-sendButtonTCP.addEventListener('click', () => {
-    tcpClient.write(messageArea.value);
-    messageArea.value = '';
-});
-
-sendButtonUDP.addEventListener('click', () => {
-    udpClient.send(messageArea.value, 9967, '127.0.0.1');
-    messageArea.value = '';
-})
+const messageSend = (event) => {
+    if (event.keyCode == 13) {
+        if (messageArea.value != '') {
+            ipc.send('TCP-message', messageArea.value);
+            messageArea.value='';
+        }
+    }
+}

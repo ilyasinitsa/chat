@@ -1,11 +1,17 @@
+*{
+    font-family: 'Roboto', sans-serif;
+}
+
 #wrapper > *:not(h1){
     font-family: 'Roboto', sans-serif;
     margin-bottom: 10px;
 }
 
 h1{
-    font-family: 'Roboto', sans-serif;
-    margin-bottom: 20px;
+    font-weight: 100;
+    align-self: flex-start;
+    font-size: 3em;
+    margin-bottom: 50px;
 }
 
 span {
@@ -14,26 +20,37 @@ span {
 }
 
 body {
-    background-color: #5E548E;
+    margin: 0;
+}
+
+.container-after-titlebar {
+    background-position: 75%;
+    background-image: url('background.jpg');
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 input[type="text"], [type="password"] {
+    color: #fff;
+    outline: none;
     font-size: 0.9em;
-    padding: 2px 5px;
+    padding: 2px 10px;
     height: 2em;
-    background-color: #9F86C0;
-    border: none;
+    border: 1px solid #fff;
+    background: none;
     border-radius: 5px;
     width: auto;
 }
 
 input[type="button"] {
+    outline: none;
     font-size: 0.9em;
     margin-top: 10px;
     height: 2.5em;
     border: none;
     border-radius: 5px;
-    background-color: rgb(212, 208, 208);
+    background-color: #d2d2d2;
 }
 
 a {
@@ -43,6 +60,10 @@ a {
 }
 
 #wrapper {
+    background: rgba(94, 84, 142, 0.5);
+    padding: 0 20px;
+    width: 640px;
+    height: 480px;
     color: #fff;
     display: flex;
     flex-direction: column;
