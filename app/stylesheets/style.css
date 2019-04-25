@@ -1,0 +1,128 @@
+* {
+  font-family: 'Evolve Sans';
+  font-weight: normal;
+}
+
+body { 
+  margin: 0;
+  height: 100vh;
+}
+
+.button {
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.chat-header{
+  box-sizing: border-box;
+  border-bottom: 1px solid #c5c5c5;
+}
+
+.chat-input {
+  box-sizing: border-box;
+  font-size: 0.9em;
+  padding: 0 30px;
+  border: none;
+  outline: none;
+}
+
+.chat-input:disabled {
+  background: #ffffff;
+}
+
+.chat-wrapper {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 64px minmax(250px, 1fr) 3fr;
+  grid-template-rows: 100%;
+}
+
+.groups-panel {
+  background: #373e50;
+  /* background: #708d9a; */
+}
+
+.input-panel {
+  display: grid;
+  grid-template-columns: auto 32px 64px;
+  grid-template-rows: 100%;
+  box-sizing: border-box;
+  border-top: 1px solid #c5c5c5;
+}
+
+.logo {
+  width: 100%;
+  height: 64px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.logo > img {
+  width: 100%;
+}
+
+.main-panel {
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: 80px 1fr 64px;
+  background: #ffffff;
+}
+
+.message-send-button {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background: #373e50;
+  align-self: center;
+  justify-self: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.message-send-button:hover {
+  transform: scale(1.25);
+}
+
+.message-send-button > i {
+  font-size: 1.5em;
+  color: #ffffff;
+}
+
+.messages-panel {
+  box-sizing: border-box;
+  padding: 16px;
+  overflow-y: hidden;
+  overflow-y: scroll;
+}
+
+.send-file-button {
+  transition: font-size 0.2s ease-in-out;
+}
+
+.send-file-button:hover {
+  font-size: 1.1em;
+}
+
+.settings-panel {
+  background: #2d3341;
+  /* background: #3f6071; */
+}
+
+.settings-panel > a {
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  font-size: 1em;
+  display: flex;
+  width: 100%;
+  height: 64px;
+}
+
+.settings-panel > a:hover > i{
+  color: red;
+}

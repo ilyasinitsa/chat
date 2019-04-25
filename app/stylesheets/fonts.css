@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Evolve Sans';
+  src: url('../fonts/Evolve_Sans/MADE\ Evolve\ Sans\ Regular\ \(PERSONAL\ USE\).otf') format('opentype');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Evolve Sans';
+  src: url('../fonts/Evolve_Sans/MADE\ Evolve\ Sans\ Bold\ \(PERSONAL\ USE\).otf') format('opentype');
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: 'Evolve Sans EVO';
+  src: url('../fonts/Evolve_Sans/MADE\ Evolve\ Sans\ Regular\ EVO\ \(PERSONAL\ USE\).otf') format('opentype');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Evolve Sans EVO';
+  src: url('../fonts/Evolve_Sans/MADE\ Evolve\ Sans\ Bold\ EVO\ \(PERSONAL\ USE\).otf') format('opentype');
+  font-weight: bold;
+}

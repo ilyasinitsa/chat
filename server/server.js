@@ -1,76 +1,70 @@
-﻿const dgram = require('dgram');
-const net = require('net');
+﻿const net = require('net');
 const mysql = require('mysql');
 
 //Создание списка TCP подключений
 var clients = Array();
 
 //Подключение к базе данных
-const conn = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'messenger'
-});
+const conn = mysql.createConnection({host: 'localhost', user: 'root', password: '', database: 'messenger'});
 conn.connect();
-
-//Создание UDP сервера
-const udpServer = dgram.createSocket('udp4');
-
-udpServer.on('listening', () => {
-    console.log('UDP-сервер запущен');
-});
-
-udpServer.on('message', (msg) => {
-    console.log('Получено сообщение (UDP): ' + msg);
-    clients.forEach(client => {
-        udpServer.send(msg, 9967, client.localAddress);
-    });
-});
-
-udpServer.bind(9967, '127.0.0.1');
-
+ 
 //Создание TCP сервера
 const tcpServer = net.createServer( function (socket) {
-    console.log('Пользователь подключился');
-    
+    console.log('User connected ' + socket.remoteAddress + ':' + socket.remotePort);
+
     socket.setEncoding('utf8');
     
     //Обработка сообщений
     socket.on('data', (data) => {
         let message = JSON.parse(data);
-        //Авторизация
-        if (message.type == 'login') {
-            //Проверка, существует ли пользователь
-            conn.query('SELECT COUNT(*) AS cnt, id_user FROM user WHERE EXISTS ( SELECT * FROM login_password WHERE login = "' + message.login + '" AND password = "' + message.password + '")', (err, result) => {
+
+        if (message.type === 'login') {
+            conn.query('SELECT COUNT(*) AS cnt, id_user FROM user WHERE id_login_password IN ( SELECT id_login_password FROM login_password WHERE login = "' + message.login + '" AND password = "' + message.password + '")', (err, result) => {
                 if (result[0].cnt != 0) {
-                    clients.push(socket);
-                    conn.query('UPDATE user SET last_entry ="' + new Date().toISOString().slice(0, 19).replace('T', ' ') + '" WHERE id_user = ' + result[0].id_user + ';')
+                    clients.push({
+                        userID: result[0].id_user,
+                        socket: socket
+                    });
+
+                    conn.query('UPDATE user SET online = 1 WHERE id_user ="' + result[0].id_user + '";');
+
                     socket.write(JSON.stringify({
                         type: 'login-confirm',
-                        
-                        confirm: true
-                    }));
-                }
-                else {
-                    socket.write(JSON.stringify({
-                        type: 'login-confirm',
-                        confirm: false
+                        confirm: true,
+                        autoLogin: message.autoLogin
                     }));
                 }
             });
-        }
-        else if (message.type == 'message') {
+        } else if (message.type === 'message') {
             console.log(message.sender + ": " + message.content);
             clients.forEach(client => {
-                client.write(JSON.stringify(message));
+                client.socket.write(JSON.stringify(message));
+            });
+        } else if (message.type === 'get-groups') {
+            conn.query('SELECT name FROM room INNER JOIN room_user ON room.id_room = room_user.id_room INNER JOIN user ON room_user.id_user = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login = "' + message.sender + '"', (err, result) => {
+                if (Object.keys(result).length != 0) {
+                    socket.write(JSON.stringify({
+                        type: 'groups-list',
+                        groups: result
+                    }));
+                }
+            });
+        } else if (message.type === 'group-online-get') {
+            conn.query('SELECT COUNT(user.online) AS cnt FROM room INNER JOIN room_user ON room.id_room = room_user.id_room INNER JOIN user ON room_user.id_user = user.id_user WHERE room.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
+                socket.write(JSON.stringify({
+                    type: 'group-online-get-result',
+                    groupOnline: result[0].cnt
+                }));               
             });
         }
     });
-    
+
     socket.on('end', () => {
-        console.log('Пользователь отключился');
-        clients.splice(clients.indexOf(socket), 1);
+        console.log('User disconnected');
+        if (clients.findIndex(x => x.socket == socket) >= 0) {
+            conn.query('UPDATE user SET online = 0 WHERE id_user = ' + clients.find(x => x.socket == socket).userID + ';');
+            clients.splice(clients.findIndex(x => x.socket == socket), 1);
+        }
     });
     
-}).listen(9966, '127.0.0.1',() => console.log('TCP-сервер запущен'));
+}).listen(9966, '127.0.0.1', () => console.log('Server is running'));

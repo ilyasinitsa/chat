@@ -1,0 +1,32 @@
+.message {
+  padding: 5px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 32px auto;
+  grid-template-rows: 16px 16px auto;
+  grid-column-gap: 10px;
+  min-width: auto;
+  min-height: 32px;
+}
+
+.message-user-icon {
+  display: block;
+  grid-area: 1 / 1 / 3 / 2;
+  border: 3px solid #cccccc;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: #f3cd05;
+}
+
+.message-user-login {
+  grid-area: 1 / 2 / 2 / 3;
+  font-weight: bold;
+}
+
+.message-user-content {
+  margin: 5px 0 0 0;
+  min-width: 100%;
+  grid-area: 2 / 2 / 4 / 3;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        width: 100%;
+      }
+      .wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #b8c4cb;
+        height: 100%;
+        width: 100%;
+      }
+      .animated-rhombuses::before {
+        position: relative;
+        top: 4px;
+        display: inline-block;
+        align-self: center;
+        background: #ffffff;
+        content: '';
+        width: 100px;
+        height: 2px;
+        margin-right: 5px;
+      }
+      .animated-rhombuses::after {
+        position: relative;
+        top: 4px;
+        display: inline-block;
+        align-self: center;
+        background: #ffffff;
+        content: '';
+        width: 100px;
+        height: 2px;
+        margin-left: 5px;
+      }
+      .animated-rhombuses {
+        display: inline-flex;
+        height: 24px;
+        flex-direction: row;
+      }
+      .rhombus {
+        animation: rhombuses-animation 1s linear infinite;
+        align-self: flex-end;
+        position: relative;
+        background: #ffffff;
+        width: 16px;
+        height: 16px;
+        clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+      }
+      .shifted {
+        align-self: flex-start;
+      }
+      @keyframes rhombuses-animation {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      .rhombus:nth-child(2) {
+        animation-delay: 0.25s;
+      }
+      .rhombus:nth-child(3) {
+        animation-delay: 0.5s;
+      }
+      .rhombus:nth-child(4) {
+        animation-delay: 0.75s;
+      }
+      .rhombus:nth-child(5) {
+        animation-delay: 1s;
+      }
+      .rhombus:nth-child(6) {
+        animation-delay: 1.25s;
+      }
+      .rhombus:nth-child(7) {
+        animation-delay: 1.5s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div style="margin-bottom: 20px;">
+        <img src="../images/omega.png" width="96" height="96">
+      </div>
+      <div class="animated-rhombuses">
+        <div class="rhombus"></div>
+        <div class="rhombus shifted"></div>
+        <div class="rhombus"></div>
+        <div class="rhombus shifted"></div>
+        <div class="rhombus"></div>
+        <div class="rhombus shifted"></div>
+        <div class="rhombus"></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,22 +1,43 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
     <meta charset="UTF-8">
-    <title>Talk!</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <main class="chat-wrapper">
-        <aside class="online-users">
-        </aside>
-
-        <article class="messages-area" id="messages">
-        </article>
-
-        <div class="text-area">
-            <input type="text" id="message-input" onkeydown="messageSend(event)">
+    <link rel="stylesheet" href="./stylesheets/style.css">
+    <link rel="stylesheet" href="./stylesheets/fonts.css">
+    <link rel="stylesheet" href="./stylesheets/scrollbar.css">
+    <link rel="stylesheet" href="./stylesheets/message.css">
+    <link rel="stylesheet" href="./stylesheets/group.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="chat-wrapper">
+      <div class="settings-panel">
+        <div class="logo">
+          <img src="./images/omega.png" alt="">
         </div>
-    </main>
-    <script src="app.js"></script>
-</body>
+        <a href="#" class="groups"><i class="fas fa-users"></i></a>
+        <a href="#" class="private-messages"><i class="fas fa-comment-alt"></i></a>
+        <a href="#" class="configuration"><i class="fas fa-cogs"></i></a>
+      </div>
+      <div class="groups-panel" id="groups-panel"></div>
+      <div class="main-panel">
+        <div class="chat-header"></div>
+        <div class="messages-panel" id="messages-panel"></div>
+        <div class="input-panel">
+          <input class="chat-input" type="text" id="message-area" placeholder="Ваше сообщение" value="">
+          <button class="button send-file-button">
+            <i class="fas fa-paperclip" style="font-size: 1.1em; color: #a7a7a7"></i>
+          </button>
+          <button class="button message-send-button" id="message-send" style="display: none">
+              <i class="fas fa-arrow-right"></i>
+          </button>
+          <button class="button message-send-button" id="mic-record">
+              <i class="fas fa-microphone"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
 </html>

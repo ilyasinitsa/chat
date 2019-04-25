@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../stylesheets/login.css">
+    <link rel="stylesheet" href="../stylesheets/fonts.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <title>Авторизация</title>
+  </head>
+  <body>
+    <div class="login-wrapper">
+      <div class="background">
+        <h1 class="background-text">omega desktop</h1>
+        <div class="animated-rhombuses">
+          <div class="rhombus"></div>
+          <div class="rhombus shifted"></div>
+          <div class="rhombus"></div>
+          <div class="rhombus shifted"></div>
+          <div class="rhombus"></div>
+          <div class="rhombus shifted"></div>
+          <div class="rhombus"></div>
+        </div>
+      </div>
+      <div class="input-panel">
+        <label for="login-input"><i class="fas fa-user"></i></label>
+        <input type="text" id="login-input">
+        <label for="password-input"><i class="fas fa-lock"></i></label>
+        <input type="password" id="password-input">
+        <div class="remember-forgot">
+          <div class="remember-me">
+            <input type="checkbox" id="remember-me">
+            <label for="remember-me" class="custom-checkbox"></label>Запомнить меня
+          </div>
+          <a class="forget-password" href="#">Забыли пароль?</a>
+        </div>
+        <button id="sign-in">Войти</button>
+      </div>
+    </div>
+    <script src="login.js"></script>
+  </body>
+</html>
