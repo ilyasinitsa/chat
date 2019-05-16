@@ -22,12 +22,15 @@
       </div>
       <div class="groups-panel" id="groups-panel"></div>
       <div class="main-panel">
-        <div class="chat-header"></div>
-        <div class="messages-panel" id="messages-panel"></div>
-        <div class="input-panel">
+        <div class="chat-header" style="display: none"></div>
+        <div class="placeholder">
+          <span>Выберите группу или собеседника чтобы начать</span>
+        </div>
+        <div class="messages-panel" id="messages-panel" style="display: none"></div>
+        <div class="input-panel" style="display: none">
           <input class="chat-input" type="text" id="message-area" placeholder="Ваше сообщение" value="">
           <button class="button send-file-button">
-            <i class="fas fa-paperclip" style="font-size: 1.1em; color: #a7a7a7"></i>
+            <i class="fas fa-paperclip" id="file-send" style="font-size: 1.1em; color: #a7a7a7"></i>
           </button>
           <button class="button message-send-button" id="message-send" style="display: none">
               <i class="fas fa-arrow-right"></i>

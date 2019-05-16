@@ -126,3 +126,11 @@ body {
 .settings-panel > a:hover > i{
   color: red;
 }
+
+.placeholder {
+  color: #aaaaaa;
+  grid-area: 1 / 1 / 4 / 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

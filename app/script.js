@@ -1,4 +1,5 @@
-﻿const ipc = require('electron').ipcRenderer;
+﻿const {dialog} = require('electron').remote;
+const ipc = require('electron').ipcRenderer;
 const customTitlebar = require('custom-electron-titlebar');
 
 let micRecordButton = document.getElementById('mic-record');
@@ -8,7 +9,8 @@ let messagesPanel = document.getElementById('messages-panel');
 let groupList = document.getElementById('groups-panel');
 
 let recording = false;
-var currentGroup = '';
+var currentMessagingType = 'none';
+var currentGroup;
 
 new customTitlebar.Titlebar({
     menu: false,
@@ -62,15 +64,19 @@ messageArea.onkeydown = (event) => {
 }
 
 messageSendButton.addEventListener('click', () => {
-    ipc.send('message-send', messageArea.value);
+    ipc.send('message-send', {
+        messageType: currentMessagingType,
+        messageText: messageArea.value,
+        groupName: currentGroup.dataset.group_name
+    });
     messageArea.value = '';
     buttonChange(); 
 });
 
-const messageDisplay = (messageData) => {
+const messageDisplay = (sender, content) => {
     let message = document.createElement('div');
     message.className = 'message';
-    message.innerHTML = '<div class="message-user-icon"></div><span class="message-user-login">' + messageData.sender + '</span><div class="message-user-content">' + messageData.content.replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</div>';
+    message.innerHTML = '<div class="message-user-icon"></div><span class="message-user-login">' + sender + '</span><div class="message-user-content">' + content.replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</div>';
     messagesPanel.appendChild(message);
     messagesPanel.scrollTop = messagesPanel.scrollHeight;
 }
@@ -85,10 +91,16 @@ const buttonChange = () => {
     }
 }
 
-const currentGroupUpdate = (group) => {
+const groupChange = (group) => {
+    currentMessagingType = 'group';
     currentGroup = group;
-    console.log(currentGroup);
+    document.querySelector('.placeholder').style.display = 'none';
+    document.querySelector('.chat-header').style.display = 'block';
+    document.querySelector('.messages-panel').style.display = 'block';
+    document.querySelector('.input-panel').style.display = 'grid';
+
     ipc.send('group-online-get', currentGroup.dataset.group_name);
+    ipc.send('group-messages-get', currentGroup.dataset.group_name);
 }
 
 ipc.on('groups-display', (event, arg) => {
@@ -100,21 +112,30 @@ ipc.on('groups-display', (event, arg) => {
         group.innerHTML = '<div class="group-icon"></div><span class ="group-name">' + arg[i].name + '</span>';
 
         group.addEventListener('click', event => {
-            currentGroupUpdate(group); 
+            groupChange(group); 
         });
 
         groupList.appendChild(group);
     }
 });
 
-ipc.on('message-print', (event, arg) => {
-    messageDisplay(JSON.parse(arg));
+ipc.on('message-display', (event, arg) => {
+    if (arg.messageType === 'group' && currentGroup.dataset.group_name === arg.groupName) {
+        messageDisplay(arg.sender, arg.content);
+    }
 });
 
-ipc.on('group-online-get-result', (event, arg) => {
+ipc.on('group-online-display', (event, arg) => {
     document.querySelector('.chat-header').innerHTML = arg;
-})
+});
+
+ipc.on('group-messages-display', (event, arg) => {
+    messagesPanel.innerHTML = '';
+    for (i in arg) {
+        messageDisplay(arg[i].login, arg[i].message);
+    }
+});
 
 window.onload = () => {
-    ipc.send('get-groups', );
+    ipc.send('get-groups');
 }

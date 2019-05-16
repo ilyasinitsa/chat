@@ -16,7 +16,7 @@
 
 .group-icon {
   box-sizing: border-box;
-  background: #ff0000;
+  background: #ffffff;
   border-radius: 50%;
   grid-area: 1 / 1 / 3 / 2;
 }

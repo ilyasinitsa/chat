@@ -1,7 +1,7 @@
 {
   "name": "chat",
-  "version": "0.0.2",
-  "description": "",
+  "version": "0.0.3",
+  "description": "Chat (TCP/UDP)",
   "main": "./app/main.js",
   "dependencies": {
     "custom-electron-titlebar": "^3.0.8",
@@ -11,6 +11,14 @@
   "scripts": {
     "start": "electron ."
   },
-  "author": "",
-  "license": "ISC"
+  "author": "ilyasinitsa",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilyasinitsa/chat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ilyasinitsa/chat/issues"
+  },
+  "homepage": "https://github.com/ilyasinitsa/chat#readme"
 }

@@ -18,7 +18,7 @@ const tcpServer = net.createServer( function (socket) {
     socket.on('data', (data) => {
         let message = JSON.parse(data);
 
-        if (message.type === 'login') {
+        if (message.type === 'REQ_AUTHORIZATION') { //Обработка авторизации
             conn.query('SELECT COUNT(*) AS cnt, id_user FROM user WHERE id_login_password IN ( SELECT id_login_password FROM login_password WHERE login = "' + message.login + '" AND password = "' + message.password + '")', (err, result) => {
                 if (result[0].cnt != 0) {
                     clients.push({
@@ -29,33 +29,57 @@ const tcpServer = net.createServer( function (socket) {
                     conn.query('UPDATE user SET online = 1 WHERE id_user ="' + result[0].id_user + '";');
 
                     socket.write(JSON.stringify({
-                        type: 'login-confirm',
+                        type: 'REQ_AUTHORIZATION_RESULT',
                         confirm: true,
-                        autoLogin: message.autoLogin
+                    }));
+                } else {
+                    socket.write(JSON.stringify({
+                        type: 'REQ_AUTHORIZATION_RESULT',
+                        confirm: false
                     }));
                 }
             });
-        } else if (message.type === 'message') {
-            console.log(message.sender + ": " + message.content);
-            clients.forEach(client => {
-                client.socket.write(JSON.stringify(message));
-            });
-        } else if (message.type === 'get-groups') {
-            conn.query('SELECT name FROM room INNER JOIN room_user ON room.id_room = room_user.id_room INNER JOIN user ON room_user.id_user = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login = "' + message.sender + '"', (err, result) => {
+        } else if (message.type === 'REQ_MESSAGE') { //Обработка сообщений
+            if (message.messageType === 'group') {
+                conn.query('INSERT INTO `group_messages` SET id_group = (SELECT id_group FROM `group` WHERE `group`.`name` = "' + message.groupName + '"), id_sender = (SELECT id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.sender + '"), message = "' + message.content + '";', (err, result) => {
+                    conn.query('SELECT user.id_user FROM user INNER JOIN group_user on user.id_user = group_user.id_user INNER JOIN `group` ON group_user.id_group = `group`.`id_group` WHERE `group`.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
+                        for (i in result) {
+                            clients.find(x => x.userID == result[i].id_user).socket.write(JSON.stringify(message));
+                        }
+                    });
+                });
+            } else {
+                
+            }
+        } else if (message.type === 'REQ_GROUPLIST') { //Отправка списка групп пользователю
+            conn.query('SELECT name FROM `group` INNER JOIN group_user ON `group`.id_group = group_user.id_group INNER JOIN user ON group_user.id_user = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login = "' + message.sender + '"', (err, result) => {
                 if (Object.keys(result).length != 0) {
                     socket.write(JSON.stringify({
-                        type: 'groups-list',
+                        type: 'REQ_GROUPLIST_RESULT',
                         groups: result
                     }));
                 }
             });
-        } else if (message.type === 'group-online-get') {
-            conn.query('SELECT COUNT(user.online) AS cnt FROM room INNER JOIN room_user ON room.id_room = room_user.id_room INNER JOIN user ON room_user.id_user = user.id_user WHERE room.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
+        } else if (message.type === 'REQ_GROUPONLINE') { //Отправка количества пользователей в сети группы
+            conn.query('SELECT COUNT(user.online) AS cnt FROM `group` INNER JOIN group_user ON `group`.id_group = group_user.id_group INNER JOIN user ON group_user.id_user = user.id_user WHERE `group`.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
                 socket.write(JSON.stringify({
-                    type: 'group-online-get-result',
+                    type: 'REQ_GROUPONLINE_RESULT',
                     groupOnline: result[0].cnt
                 }));               
             });
+        } else if (message.type === 'REQ_FRIENDSLIST') {
+            //
+        } else if (message.type === 'REQ_GROUPMESSAGES') {
+            conn.query('SELECT login_password.login, group_messages.message FROM group_messages INNER JOIN user ON group_messages.id_sender = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE id_group IN (SELECT `group`.id_group FROM `group` WHERE `group`.name = "' + message.groupName + '")', (err, result) => {
+                socket.write(JSON.stringify({
+                    type: 'REQ_GROUPMESSAGES_RESULT',
+                    groupMessages: result
+                }));
+            });
+        } else if (message.type === 'REQ_DIRECTMESSAGES') {
+            //
+        } else if (message.type === 'REQ_SIGNOUT') {
+            //
         }
     });
 
