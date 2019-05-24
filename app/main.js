@@ -73,7 +73,7 @@ const createWindow = () => {
     splashScreen = new BrowserWindow({width: 350, height: 350, frame: false, show: false, alwaysOnTop: true});
     splashScreen.loadFile('./app/splashscreen/loading.html');
 
-    loginWindow = new BrowserWindow({width: 550, height: 480, frame: false, show: false});
+    loginWindow = new BrowserWindow({width: 550, height: 480, frame: false, show: false, maximizable: false, minimizable: false});
     loginWindow.setMenu(null);
 
     loginWindow.loadFile('./app/login/index.html');
@@ -113,7 +113,7 @@ const tcpSetup = () => {
         } else if (message.type === 'REQ_GROUPONLINE_RESULT') {
             appWindow.webContents.send('group-online-display', message.groupOnline);
         } else if (message.type === 'REQ_GROUPMESSAGES_RESULT') {
-            appWindow.webContents.send('group-messages-display', message.groupMessages);
+            appWindow.webContents.send('group-messages-display', message);
         }
     });
 }

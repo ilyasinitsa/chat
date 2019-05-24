@@ -76,7 +76,7 @@ messageSendButton.addEventListener('click', () => {
 const messageDisplay = (sender, content) => {
     let message = document.createElement('div');
     message.className = 'message';
-    message.innerHTML = '<div class="message-user-icon"></div><span class="message-user-login">' + sender + '</span><div class="message-user-content">' + content.replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</div>';
+    message.innerHTML = '<div class="sender-icon"><i class="far fa-user"></i></div><div><div class="message-sender-login">' + sender + '</div><div class="message-content-wrapper"><div class="message-content">' + content.replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</div></div>';
     messagesPanel.appendChild(message);
     messagesPanel.scrollTop = messagesPanel.scrollHeight;
 }
@@ -99,7 +99,6 @@ const groupChange = (group) => {
     document.querySelector('.messages-panel').style.display = 'block';
     document.querySelector('.input-panel').style.display = 'grid';
 
-    ipc.send('group-online-get', currentGroup.dataset.group_name);
     ipc.send('group-messages-get', currentGroup.dataset.group_name);
 }
 
@@ -130,9 +129,10 @@ ipc.on('group-online-display', (event, arg) => {
 });
 
 ipc.on('group-messages-display', (event, arg) => {
+    document.querySelector('.chat-header').innerHTML = arg.groupOnline;
     messagesPanel.innerHTML = '';
-    for (i in arg) {
-        messageDisplay(arg[i].login, arg[i].message);
+    for (i in arg.groupMessages) {
+        messageDisplay(arg.groupMessages[i].login, arg.groupMessages[i].message);
     }
 });
 

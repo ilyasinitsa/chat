@@ -94,17 +94,8 @@ body {
 
 .messages-panel {
   box-sizing: border-box;
-  padding: 16px;
   overflow-y: hidden;
   overflow-y: scroll;
-}
-
-.send-file-button {
-  transition: font-size 0.2s ease-in-out;
-}
-
-.send-file-button:hover {
-  font-size: 1.1em;
 }
 
 .settings-panel {

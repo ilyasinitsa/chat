@@ -70,17 +70,27 @@ const tcpServer = net.createServer( function (socket) {
         } else if (message.type === 'REQ_FRIENDSLIST') {
             //
         } else if (message.type === 'REQ_GROUPMESSAGES') {
+            groupData = {};
+            groupData.type = 'REQ_GROUPMESSAGES_RESULT';
+            
             conn.query('SELECT login_password.login, group_messages.message FROM group_messages INNER JOIN user ON group_messages.id_sender = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE id_group IN (SELECT `group`.id_group FROM `group` WHERE `group`.name = "' + message.groupName + '")', (err, result) => {
-                socket.write(JSON.stringify({
-                    type: 'REQ_GROUPMESSAGES_RESULT',
-                    groupMessages: result
-                }));
+                groupData.groupMessages = result;
             });
+
+            conn.query('SELECT COUNT(user.online) AS cnt FROM `group` INNER JOIN group_user ON `group`.id_group = group_user.id_group INNER JOIN user ON group_user.id_user = user.id_user WHERE `group`.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
+                groupData.groupOnline = result[0].cnt;                
+                socket.write(JSON.stringify(groupData));
+            });
+
         } else if (message.type === 'REQ_DIRECTMESSAGES') {
             //
         } else if (message.type === 'REQ_SIGNOUT') {
             //
         }
+
+        setInterval(() => {
+            conn.query('SELECT 1');
+        }, 5000);
     });
 
     socket.on('end', () => {
