@@ -1,7 +1,8 @@
 .group {
+  cursor: pointer;
   border-left: 5px solid transparent;
   display: grid;
-  border-bottom: 1px solid #57617c;
+  border-bottom: 1px solid #434b60;
   grid-template-rows: 1fr 1fr;
   grid-template-columns: 40px 1fr;
   grid-column-gap: 10px;
@@ -11,10 +12,17 @@
 }
 
 .group:hover {
-  background: #57617c;
+  background: #434b60;
 }
 
 .group-icon {
+  color: #434b60;
+  font-size: 20px;
+  display: flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
   background: #ffffff;
   border-radius: 50%;
@@ -27,4 +35,47 @@
   letter-spacing: 1px;
   color: #ffffff;
   font-weight: bold;
+}
+
+.group-header-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-area: 2 / 1 / 4 / 2;
+  width: 40px;
+  height: 40px;
+  background: #434b60;
+  color: #ffffff;
+  border-radius: 50%;
+}
+
+.group-header-name {
+  grid-area: 2 / 2 / 3 / 3;
+  font-size: 14px;
+  align-self: flex-end;
+  font-weight: bold;
+}
+
+.group-header-online {
+  color: #aaaaaa;
+  font-size: 14px;
+  align-self: flex-start;
+  grid-area: 3 / 2 / 4 / 3;
+}
+
+.group-header-more {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  grid-area: 1 / 3 / 4 / 4;
+  background: #dddddd;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  transition: background linear 0.2s;
+}
+
+.group-header-more:hover {
+  background: #bbbbbb;
 }

@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 32px auto 32px;
   grid-column-gap: 10px;
-  margin: 10px;
+  margin: 10px 15px;
   box-sizing: border-box;
 }
 
@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  background-color: #57617c;
+  background-color: #434b60;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -21,22 +21,62 @@
 }
 
 .message-sender-login {
+  margin-bottom: 2px;
   font-size: 14px;
   font-family: 'Evolve Sans';
   font-weight: bold;
 }
 
 .message-content-wrapper {
-  padding-top: 5px;
+  /* padding-top: 5px; */
   display: flex;
   flex-direction: row;
 }
 
 .message-content {
-  border-radius: 0 10px 10px 10px;
+  font-size: 0.9em;
+  border-radius: 5px 5px 5px 5px;
   padding: 5px 10px;
   width: auto;
   word-break: break-all;
   word-wrap: break-word;
-  background: #eeeeee;
+  background: #dddddd;
+}
+
+.send-time {
+  margin-left: 5px;
+  display: flex;
+  font-size: 12px;
+  color: #999999;
+  align-items: center;
+}
+
+.messages-date-splitter {
+  font-size: 13px;
+  display: flex;
+  justify-content: center;
+  margin: 10px 30px;
+  color: #aaaaaa;
+}
+
+.messages-date-splitter::before {
+  position: relative;
+  top: 8px;
+  display: inline-block;
+  height: 1px;
+  width: 30%;
+  background: #aaaaaa;
+  content: '';
+  margin-right: 10px;
+}
+
+.messages-date-splitter::after {
+  position: relative;
+  top: 8px;
+  display: inline-block;
+  height: 1px;
+  width: 30%;
+  background: #aaaaaa;
+  content: '';
+  margin-left: 10px;
 }

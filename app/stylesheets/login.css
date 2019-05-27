@@ -19,7 +19,7 @@ html, body {
 }
 
 .background {
-  background: linear-gradient(#00000099, #00000010) ,url('../images/background.jpg');
+  background: linear-gradient(#434b60d5, #434b6088) ,url('../images/background.jpg');
   background-size: cover;
   display: flex;
   flex-direction: column;
@@ -95,7 +95,7 @@ html, body {
 
 #login-input:focus, 
 #password-input:focus {
-  border-bottom-color: #3f6071;
+  border-bottom-color: #434b60;
 }
 
 .remember-forgot {
@@ -137,7 +137,7 @@ html, body {
   width: 10px;
   height: 10px;
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-  background: #708d9a;
+  background: #434b60;
   transition: opacity 0.1s linear;
 }
 
@@ -160,7 +160,7 @@ html, body {
 }
 
 .forget-password:hover {
-  color: #3f6071;
+  color: #373e50;
 }
 
 #sign-in {
@@ -170,7 +170,7 @@ html, body {
   font-weight: normal;
   color: #ffffff;
   /* background: #57b847; */
-  background: #708d9a;
+  background: #434b60;
   border: none;
   border-radius: 25px;
   grid-area: 4 / 2 / 5 / 3;
@@ -180,7 +180,7 @@ html, body {
 }
 
 #sign-in:hover {
-  background: #3f6071;
+  background: #373e50;
 }
 
 .animated-rhombuses {

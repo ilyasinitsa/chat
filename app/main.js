@@ -1,6 +1,6 @@
 const electron = require('electron');
 const net = require('net');
-const fs = require('fs');
+const moment = require('moment');
 const ipc = electron.ipcMain;
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -8,7 +8,6 @@ const BrowserWindow = electron.BrowserWindow;
 let appWindow;
 let loginWindow;
 let tcpClient;
-let fileClient;
 let login;
 
 //Вход в программу
@@ -29,7 +28,8 @@ ipc.on('message-send', (event, arg) => {
             sender: login,
             messageType: arg.messageType,
             groupName: arg.groupName,
-            content: arg.messageText
+            content: arg.messageText,
+            sendTime: moment().format("YYYY-MM-DD HH:mm:ss")
         }));
     }
 });
@@ -49,9 +49,9 @@ ipc.on('group-online-get', (event, arg) => {
     }));
 });
 
-ipc.on('group-messages-get', (event, arg) => {
+ipc.on('group-data-get', (event, arg) => {
     tcpClient.write(JSON.stringify({
-        type: 'REQ_GROUPMESSAGES',
+        type: 'REQ_GROUPDATA',
         groupName: arg
     }));
 });
@@ -70,10 +70,10 @@ app.on('window-all-closed', () => {
 
 // Создание окон
 const createWindow = () => {
-    splashScreen = new BrowserWindow({width: 350, height: 350, frame: false, show: false, alwaysOnTop: true});
+    splashScreen = new BrowserWindow({width: 350, height: 350, frame: false, show: false, alwaysOnTop: true, webPreferences: {nodeIntegration: true}});
     splashScreen.loadFile('./app/splashscreen/loading.html');
 
-    loginWindow = new BrowserWindow({width: 550, height: 480, frame: false, show: false, maximizable: false, minimizable: false});
+    loginWindow = new BrowserWindow({width: 550, height: 480, frame: false, show: false, maximizable: false, minimizable: false, webPreferences: {nodeIntegration: true}});
     loginWindow.setMenu(null);
 
     loginWindow.loadFile('./app/login/index.html');
@@ -98,7 +98,7 @@ const tcpSetup = () => {
         message = JSON.parse(data);
         if (message.type === 'REQ_AUTHORIZATION_RESULT') {
             if (message.confirm) {
-                appWindow = new BrowserWindow({minWidth: 800, minHeight: 600, frame: false, useContentSize: true});
+                appWindow = new BrowserWindow({minWidth: 800, minHeight: 600, frame: false, useContentSize: true, webPreferences: {nodeIntegration: true}});
                 appWindow.setMenu(null);
                 appWindow.webContents.openDevTools();
                 appWindow.loadFile('./app/index.html');
@@ -112,7 +112,7 @@ const tcpSetup = () => {
             appWindow.webContents.send('groups-display', message.groups);
         } else if (message.type === 'REQ_GROUPONLINE_RESULT') {
             appWindow.webContents.send('group-online-display', message.groupOnline);
-        } else if (message.type === 'REQ_GROUPMESSAGES_RESULT') {
+        } else if (message.type === 'REQ_GROUPDATA_RESULT') {
             appWindow.webContents.send('group-messages-display', message);
         }
     });

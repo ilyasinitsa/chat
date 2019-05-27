@@ -21,10 +21,8 @@ const tcpServer = net.createServer( function (socket) {
         if (message.type === 'REQ_AUTHORIZATION') { //Обработка авторизации
             conn.query('SELECT COUNT(*) AS cnt, id_user FROM user WHERE id_login_password IN ( SELECT id_login_password FROM login_password WHERE login = "' + message.login + '" AND password = "' + message.password + '")', (err, result) => {
                 if (result[0].cnt != 0) {
-                    clients.push({
-                        userID: result[0].id_user,
-                        socket: socket
-                    });
+                    socket.userID = result[0].id_user;
+                    clients.push(socket);
 
                     conn.query('UPDATE user SET online = 1 WHERE id_user ="' + result[0].id_user + '";');
 
@@ -41,10 +39,10 @@ const tcpServer = net.createServer( function (socket) {
             });
         } else if (message.type === 'REQ_MESSAGE') { //Обработка сообщений
             if (message.messageType === 'group') {
-                conn.query('INSERT INTO `group_messages` SET id_group = (SELECT id_group FROM `group` WHERE `group`.`name` = "' + message.groupName + '"), id_sender = (SELECT id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.sender + '"), message = "' + message.content + '";', (err, result) => {
+                conn.query('INSERT INTO `group_messages` SET id_group = (SELECT id_group FROM `group` WHERE `group`.`name` = "' + message.groupName + '"), id_sender = (SELECT id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.sender + '"), message = "' + message.content + '", send_time = "' + message.sendTime + '";', (err, result) => {
                     conn.query('SELECT user.id_user FROM user INNER JOIN group_user on user.id_user = group_user.id_user INNER JOIN `group` ON group_user.id_group = `group`.`id_group` WHERE `group`.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
                         for (i in result) {
-                            clients.find(x => x.userID == result[i].id_user).socket.write(JSON.stringify(message));
+                            clients.find(x => x.userID == result[i].id_user).write(JSON.stringify(message));
                         }
                     });
                 });
@@ -69,11 +67,11 @@ const tcpServer = net.createServer( function (socket) {
             });
         } else if (message.type === 'REQ_FRIENDSLIST') {
             //
-        } else if (message.type === 'REQ_GROUPMESSAGES') {
+        } else if (message.type === 'REQ_GROUPDATA') {
             groupData = {};
-            groupData.type = 'REQ_GROUPMESSAGES_RESULT';
+            groupData.type = 'REQ_GROUPDATA_RESULT';
             
-            conn.query('SELECT login_password.login, group_messages.message FROM group_messages INNER JOIN user ON group_messages.id_sender = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE id_group IN (SELECT `group`.id_group FROM `group` WHERE `group`.name = "' + message.groupName + '")', (err, result) => {
+            conn.query('SELECT login_password.login, group_messages.message, group_messages.send_time FROM group_messages INNER JOIN user ON group_messages.id_sender = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE id_group IN (SELECT `group`.id_group FROM `group` WHERE `group`.name = "' + message.groupName + '")', (err, result) => {
                 groupData.groupMessages = result;
             });
 
@@ -95,9 +93,9 @@ const tcpServer = net.createServer( function (socket) {
 
     socket.on('end', () => {
         console.log('User disconnected');
-        if (clients.findIndex(x => x.socket == socket) >= 0) {
-            conn.query('UPDATE user SET online = 0 WHERE id_user = ' + clients.find(x => x.socket == socket).userID + ';');
-            clients.splice(clients.findIndex(x => x.socket == socket), 1);
+        if (clients.length > 0) {
+            conn.query('UPDATE user SET online = 0 WHERE id_user = ' + clients.find(x => x == socket).userID + ';');
+            clients.splice(clients.findIndex(x => x == socket), 1);
         }
     });
     

@@ -1,6 +1,7 @@
 * {
   font-family: 'Evolve Sans';
   font-weight: normal;
+  outline: none;
 }
 
 body { 
@@ -18,6 +19,12 @@ body {
 }
 
 .chat-header{
+  box-sizing: border-box;
+  display: grid;
+  padding: 15px 20px 14px 20px;
+  grid-template-columns: 40px auto 50px;
+  grid-template-rows: 5px auto auto 5px;
+  grid-column-gap: 10px;
   box-sizing: border-box;
   border-bottom: 1px solid #c5c5c5;
 }
@@ -44,7 +51,6 @@ body {
 
 .groups-panel {
   background: #373e50;
-  /* background: #708d9a; */
 }
 
 .input-panel {
@@ -100,10 +106,10 @@ body {
 
 .settings-panel {
   background: #2d3341;
-  /* background: #3f6071; */
 }
 
-.settings-panel > a {
+.settings-panel > div {
+  transition: background linear 0.2s;
   text-decoration: none;
   justify-content: center;
   align-items: center;
@@ -114,8 +120,9 @@ body {
   height: 64px;
 }
 
-.settings-panel > a:hover > i{
-  color: red;
+.settings-panel > div:hover:not(.logo){
+  cursor: pointer;
+  background: #434b60;
 }
 
 .placeholder {
