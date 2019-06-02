@@ -56,6 +56,31 @@ ipc.on('group-data-get', (event, arg) => {
     }));
 });
 
+ipc.on('user-data-get', (event, arg) => {
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_USERDATA'
+    }));
+});
+
+ipc.on('user-data-changes-save', (event, arg) => {
+    login = arg.login;
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_USERDATAUPDATE',
+        userName: arg.name,
+        userLastName: arg.lastName,
+        userLogin: arg.login
+    }));
+});
+
+ipc.on('group-create', (event, arg) => {
+    console.log(arg);
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_GROUPCREATE',
+        groupCreator: login,
+        groupName: arg.groupName
+    }));
+})
+
 //Запуск приложения
 app.on('ready', () => {
     tcpSetup();
@@ -113,7 +138,11 @@ const tcpSetup = () => {
         } else if (message.type === 'REQ_GROUPONLINE_RESULT') {
             appWindow.webContents.send('group-online-display', message.groupOnline);
         } else if (message.type === 'REQ_GROUPDATA_RESULT') {
-            appWindow.webContents.send('group-messages-display', message);
+            appWindow.webContents.send('group-data-display', message);
+        } else if (message.type === 'REQ_USERDATA_RESULT') {
+            appWindow.webContents.send('user-data-display', message);
+        } else if (message.type === 'REQ_GROUPCREATE_RESULT') {
+            
         }
     });
 }

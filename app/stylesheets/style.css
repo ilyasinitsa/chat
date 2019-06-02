@@ -105,7 +105,9 @@ body {
 }
 
 .settings-panel {
+  box-sizing: border-box;
   background: #2d3341;
+  border-right: 1px solid #434b60;
 }
 
 .settings-panel > div {

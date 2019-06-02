@@ -8,13 +8,17 @@ var clients = Array();
 const conn = mysql.createConnection({host: 'localhost', user: 'root', password: '', database: 'messenger'});
 conn.connect();
  
+setInterval(() => {
+    conn.query('SELECT 1');
+}, 5000);
+
 //Создание TCP сервера
 const tcpServer = net.createServer( function (socket) {
     console.log('User connected ' + socket.remoteAddress + ':' + socket.remotePort);
 
     socket.setEncoding('utf8');
     
-    //Обработка сообщений
+    //Обработка запросов
     socket.on('data', (data) => {
         let message = JSON.parse(data);
 
@@ -84,11 +88,28 @@ const tcpServer = net.createServer( function (socket) {
             //
         } else if (message.type === 'REQ_SIGNOUT') {
             //
+        } else if (message.type === 'REQ_USERDATA') {
+            conn.query('SELECT personal_data.name, personal_data.last_name, login_password.login FROM user INNER JOIN personal_data ON user.id_personal_data = personal_data.id_personal_data INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE user.id_user =' + socket.userID + ';', (err, result) => {
+                socket.write(JSON.stringify({
+                    type: 'REQ_USERDATA_RESULT',
+                    userName: result[0].name,
+                    userLastName: result[0].last_name,
+                    userLogin: result[0].login
+                }));
+            });
+        } else if (message.type === 'REQ_USERDATAUPDATE') {
+            conn.query('UPDATE personal_data SET name = "' + message.userName + '", last_name = "' + message.userLastName + '" WHERE id_personal_data = (SELECT id_personal_data FROM user WHERE id_user = ' + socket.userID + ');', (err, result) => {
+                conn.query('UPDATE login_password SET login = "' + message.userLogin +'" WHERE id_login_password = (SELECT id_login_password FROM user WHERE id_user = ' + socket.userID + ');');
+            });
+        } else if (message.type === 'REQ_GROUPCREATE') {
+            inviteCode = groupInviteCodeGeneration();
+            conn.query('INSERT INTO `group` SET name ="' + message.groupName + '", code ="' + inviteCode + '", creator = ' + socket.userID + ';');
+            conn.query('INSERT INTO group_user SET id_group = (SELECT id_group FROM `group` WHERE code = "' + inviteCode + '"), id_user = ' + socket.userID + ';');
+            socket.write(JSON.stringify({
+                type: 'REQ_GROUPCREATE_RESULT',
+                inviteCode: inviteCode 
+            }))
         }
-
-        setInterval(() => {
-            conn.query('SELECT 1');
-        }, 5000);
     });
 
     socket.on('end', () => {
@@ -98,5 +119,8 @@ const tcpServer = net.createServer( function (socket) {
             clients.splice(clients.findIndex(x => x == socket), 1);
         }
     });
-    
 }).listen(9966, '127.0.0.1', () => console.log('Server is running'));
+
+const groupInviteCodeGeneration = () => {
+    return Math.random().toString(36).substr(2, 8);
+}

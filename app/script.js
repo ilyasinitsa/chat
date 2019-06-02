@@ -8,6 +8,7 @@ let messageSendButton = document.getElementById('message-send');
 let messageArea = document.getElementById('message-area');
 let messagesPanel = document.getElementById('messages-panel');
 let groupList = document.getElementById('groups-panel');
+let settingsButton = document.querySelector('.configuration');
 
 let recording = false;
 let currentMessagingType = 'none';
@@ -75,6 +76,36 @@ messageSendButton.addEventListener('click', () => {
     buttonChange(); 
 });
 
+settingsButton.onclick = () => {
+    ipc.send('user-data-get', '');
+    let fadeBackground = document.createElement('div');
+    fadeBackground.className = 'fade-background';
+    fadeBackground.innerHTML = '<div class="settings-wrapper"><div class="settings-side-panel"><span class="settings-label">Настройки</span><div class="user-data-panel"><div class="user-data-icon"><i class="far fa-user"></i></div><span>Имя</span><input id="userNameInput" type="text"><span>Фамилия</span><input id="userLastNameInput" type="text"><span>Логин</span><input id="userLoginInput" type="text"><button id="userDataSaveChanges">Сохранить</button></div></div><div class="group-create-wrapper"><div class="group-create-icon"><i class="fas fa-user-friends"></i><i class="fas fa-plus"></i></div><button id="groupCreateStart">Создать свою группу</button></div></div>'
+    fadeBackground.onclick = () => {
+        document.querySelector('.container-after-titlebar').removeChild(fadeBackground);
+    }
+    document.querySelector('.container-after-titlebar').appendChild(fadeBackground);
+    document.querySelector('.settings-wrapper').addEventListener('click', event => event.stopPropagation());
+    document.querySelector('#userDataSaveChanges').addEventListener('click', () => {
+        ipc.send('user-data-changes-save', {
+            name: document.querySelector('#userNameInput').value,
+            lastName: document.querySelector('#userLastNameInput').value,
+            login: document.querySelector('#userLoginInput').value
+        });
+        document.querySelector('.container-after-titlebar').removeChild(fadeBackground);
+    });
+    document.querySelector('#groupCreateStart').addEventListener('click', () => {
+        fadeBackground.removeChild(document.querySelector('.settings-wrapper'));
+        fadeBackground.innerHTML = '<div class="group-create-window"><div class="group-create-window-info"><div class="group-create-window-label">Создание группы</div><div class="group-create-window-message">Введите название для создаваемой группы и нажмите "Создать"<br><br> После успешного создания группы вам будет выдан уникальный код, с помощью которого вы сможете пригласить своих друзей</div></div><div class="group-create-name"><span>Название группы</span><input id="groupNameInput" type="text"><button id="groupCreate">Создать</button></div></div>';
+        document.querySelector('.group-create-window').addEventListener('click', event => event.stopPropagation());
+        document.querySelector('#groupCreate').addEventListener('click', () => {
+            if (document.querySelector('#groupNameInput').value != '') {
+                ipc.send('group-create', document.querySelector('#groupNameInput').value);
+            }
+        })
+    });
+}
+
 const messageDisplay = (sender, content, sendTime) => {
     let message = document.createElement('div');
     message.className = 'message';
@@ -139,13 +170,19 @@ ipc.on('group-online-display', (event, arg) => {
     document.querySelector('.chat-header').innerHTML = arg;
 });
 
-ipc.on('group-messages-display', (event, arg) => {
+ipc.on('group-data-display', (event, arg) => {
     document.querySelector('.chat-header').innerHTML = '<div class="group-header-logo"><i class="fas fa-user-friends"></i></div><div class="group-header-name">' + currentGroup.dataset.group_name + '</div><div class="group-header-online">Пользователей онлайн: ' + arg.groupOnline + '</div><div class="group-header-more"><i class="fas fa-ellipsis-v"></i></div>';
     messagesPanel.innerHTML = '';
 
     for (i in arg.groupMessages) {
         messageDisplay(arg.groupMessages[i].login, arg.groupMessages[i].message, arg.groupMessages[i].send_time);
     }
+});
+
+ipc.on('user-data-display', (event, arg) => {
+    document.querySelector('#userNameInput').value = arg.userName;
+    document.querySelector('#userLastNameInput').value = arg.userLastName;
+    document.querySelector('#userLoginInput').value = arg.userLogin;
 });
 
 window.onload = () => {

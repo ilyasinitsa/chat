@@ -122,7 +122,6 @@ html, body {
   height: 100%;
   border: 1px solid #cccccc;
   box-sizing: border-box;
-  border-radius: 2px;
   cursor: pointer;
 }
 
@@ -170,9 +169,8 @@ html, body {
   font-weight: normal;
   color: #ffffff;
   /* background: #57b847; */
-  background: #434b60;
+  background: #5c6885;
   border: none;
-  border-radius: 25px;
   grid-area: 4 / 2 / 5 / 3;
   width: 40%;
   height: 40px;
@@ -180,7 +178,7 @@ html, body {
 }
 
 #sign-in:hover {
-  background: #373e50;
+  background: #434b60;
 }
 
 .animated-rhombuses {

@@ -1,2 +1,2 @@
 # Chat
-Chat (TCP/UDP)
+Chat
