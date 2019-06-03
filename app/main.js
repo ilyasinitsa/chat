@@ -31,6 +31,15 @@ ipc.on('message-send', (event, arg) => {
             content: arg.messageText,
             sendTime: moment().format("YYYY-MM-DD HH:mm:ss")
         }));
+    } else {
+        tcpClient.write(JSON.stringify({
+            type: 'REQ_MESSAGE',
+            sender: login,
+            messageType: arg.messageType,
+            receiver: arg.receiver,
+            content: arg.messageText,
+            sendTime: moment().format("YYYY-MM-DD HH:mm:ss")
+        }));
     }
 });
 
@@ -73,13 +82,26 @@ ipc.on('user-data-changes-save', (event, arg) => {
 });
 
 ipc.on('group-create', (event, arg) => {
-    console.log(arg);
     tcpClient.write(JSON.stringify({
         type: 'REQ_GROUPCREATE',
         groupCreator: login,
         groupName: arg.groupName
     }));
-})
+});
+
+ipc.on('get-friends', (event, arg) => {
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_FRIENDLIST',
+        sender: login
+    }));
+});
+
+ipc.on('friend-data-get', (event, arg) => {
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_FRIENDDATA',
+        friendLogin: arg
+    }));
+});
 
 //Запуск приложения
 app.on('ready', () => {
@@ -135,14 +157,16 @@ const tcpSetup = () => {
             appWindow.webContents.send('message-display', message);  
         } else if (message.type === 'REQ_GROUPLIST_RESULT') {
             appWindow.webContents.send('groups-display', message.groups);
-        } else if (message.type === 'REQ_GROUPONLINE_RESULT') {
-            appWindow.webContents.send('group-online-display', message.groupOnline);
         } else if (message.type === 'REQ_GROUPDATA_RESULT') {
             appWindow.webContents.send('group-data-display', message);
         } else if (message.type === 'REQ_USERDATA_RESULT') {
             appWindow.webContents.send('user-data-display', message);
         } else if (message.type === 'REQ_GROUPCREATE_RESULT') {
             
+        } else if (message.type === 'REQ_FRIENDLIST_RESULT') {
+            appWindow.webContents.send('friends-display', message.friends);
+        } else if (message.type === 'REQ_FRIENDDATA_RESULT') {
+            appWindow.webContents.send('friend-data-display', message);
         }
     });
 }

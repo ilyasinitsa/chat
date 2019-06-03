@@ -8,11 +8,14 @@ let messageSendButton = document.getElementById('message-send');
 let messageArea = document.getElementById('message-area');
 let messagesPanel = document.getElementById('messages-panel');
 let groupList = document.getElementById('groups-panel');
+let groupsButton = document.querySelector('.groups');
 let settingsButton = document.querySelector('.configuration');
+let friendsButton = document.querySelector('.private-messages');
 
 let recording = false;
 let currentMessagingType = 'none';
 let currentGroup;
+let currentFriend;
 let lastMessageTime = ''; 
 
 new customTitlebar.Titlebar({
@@ -67,14 +70,26 @@ messageArea.onkeydown = (event) => {
 }
 
 messageSendButton.addEventListener('click', () => {
-    ipc.send('message-send', {
-        messageType: currentMessagingType,
-        messageText: messageArea.value,
-        groupName: currentGroup.dataset.group_name
-    });
+    if (currentMessagingType === 'group') {
+        ipc.send('message-send', {
+            messageType: currentMessagingType,
+            messageText: messageArea.value,
+            groupName: currentGroup.dataset.group_name
+        });
+    } else if (currentMessagingType === 'direct') {
+        ipc.send('message-send', {
+            messageType: currentMessagingType,
+            messageText: messageArea.value,
+            receiver: currentFriend.dataset.friend_login
+        });
+    }
     messageArea.value = '';
     buttonChange(); 
 });
+
+groupsButton.onclick = () => {
+    ipc.send('get-groups');
+}
 
 settingsButton.onclick = () => {
     ipc.send('user-data-get', '');
@@ -104,6 +119,10 @@ settingsButton.onclick = () => {
             }
         })
     });
+}
+
+friendsButton.onclick = () => {
+    ipc.send('get-friends');
 }
 
 const messageDisplay = (sender, content, sendTime) => {
@@ -144,7 +163,19 @@ const groupChange = (group) => {
     ipc.send('group-data-get', currentGroup.dataset.group_name);
 }
 
+const friendChange = (friend) => {
+    currentMessagingType = 'direct';
+    currentFriend = friend;
+    document.querySelector('.placeholder').style.display = 'none';
+    document.querySelector('.chat-header').style.display = 'grid';
+    document.querySelector('.messages-panel').style.display = 'block';
+    document.querySelector('.input-panel').style.display = 'grid';
+
+    ipc.send('friend-data-get', currentFriend.dataset.friend_login);
+}
+
 ipc.on('groups-display', (event, arg) => {
+    groupList.innerHTML = '';
     currentGroup = '';
     for (i in arg) {
         let group = document.createElement('div');
@@ -163,11 +194,9 @@ ipc.on('groups-display', (event, arg) => {
 ipc.on('message-display', (event, arg) => {
     if (arg.messageType === 'group' && currentGroup.dataset.group_name === arg.groupName) {
         messageDisplay(arg.sender, arg.content, arg.sendTime);
+    } else if (arg.messageType === 'direct' && (currentFriend.dataset.friend_login === arg.receiver || currentFriend.dataset.friend_login === arg.sender)) {
+        messageDisplay(arg.sender, arg.content, arg.sendTime);
     }
-});
-
-ipc.on('group-online-display', (event, arg) => {
-    document.querySelector('.chat-header').innerHTML = arg;
 });
 
 ipc.on('group-data-display', (event, arg) => {
@@ -183,6 +212,31 @@ ipc.on('user-data-display', (event, arg) => {
     document.querySelector('#userNameInput').value = arg.userName;
     document.querySelector('#userLastNameInput').value = arg.userLastName;
     document.querySelector('#userLoginInput').value = arg.userLogin;
+});
+
+ipc.on('friends-display', (event, arg) => {
+    groupList.innerHTML = '';
+    for (i in arg) {
+        let friend = document.createElement('div');
+        friend.dataset.friend_login = arg[i].login;
+        friend.className = 'group';
+        friend.innerHTML = '<div class="group-icon"><i class="fas fa-user"></i></div><span class ="group-name">' + arg[i].login + '</span>';
+
+        friend.addEventListener('click', event => {
+            friendChange(friend); 
+        });
+
+        groupList.appendChild(friend);
+    }
+});
+
+ipc.on('friend-data-display', (event, arg) => {
+    document.querySelector('.chat-header').innerHTML = '<div class="group-header-logo"><i class="fas fa-user-friends"></i></div><div class="group-header-name">' + arg.friendName + ' ' + arg.friendLastName + '</div><div class="group-header-online">Пользователей онлайн: ' + arg.online + '</div><div class="group-header-more"><i class="fas fa-ellipsis-v"></i></div>';
+    messagesPanel.innerHTML = '';
+
+    for (i in arg.friendMessages) {
+        messageDisplay(arg.friendMessages[i].login, arg.friendMessages[i].message, arg.friendMessages[i].send_time);
+    }
 });
 
 window.onload = () => {

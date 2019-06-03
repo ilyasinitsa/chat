@@ -43,7 +43,7 @@ const tcpServer = net.createServer( function (socket) {
             });
         } else if (message.type === 'REQ_MESSAGE') { //Обработка сообщений
             if (message.messageType === 'group') {
-                conn.query('INSERT INTO `group_messages` SET id_group = (SELECT id_group FROM `group` WHERE `group`.`name` = "' + message.groupName + '"), id_sender = (SELECT id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.sender + '"), message = "' + message.content + '", send_time = "' + message.sendTime + '";', (err, result) => {
+                conn.query('INSERT INTO `group_messages` SET id_group = (SELECT id_group FROM `group` WHERE `group`.`name` = "' + message.groupName + '"), id_sender = ' + socket.userID + ', message = "' + message.content + '", send_time = "' + message.sendTime + '";', (err, result) => {
                     conn.query('SELECT user.id_user FROM user INNER JOIN group_user on user.id_user = group_user.id_user INNER JOIN `group` ON group_user.id_group = `group`.`id_group` WHERE `group`.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
                         for (i in result) {
                             clients.find(x => x.userID == result[i].id_user).write(JSON.stringify(message));
@@ -51,7 +51,14 @@ const tcpServer = net.createServer( function (socket) {
                     });
                 });
             } else {
-                
+                conn.query('INSERT INTO direct_messages SET id_sender = ' + socket.userID + ', id_receiver = SELECT id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.receiver + '"), message = "' + message.content + ', send_time = "' + message.sendTime + '";', (err, result) => {
+                    conn.query('SELECT user.id_user, user.online FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.receiver + '";', (err, result) => {
+                        socket.write(JSON.stringify(message));
+                        if (result[0].online === 1) {
+                            clients.find(x => x.userID === result[0].id_user).write(JSON.stringify(message));
+                        }
+                    });
+                });
             }
         } else if (message.type === 'REQ_GROUPLIST') { //Отправка списка групп пользователю
             conn.query('SELECT name FROM `group` INNER JOIN group_user ON `group`.id_group = group_user.id_group INNER JOIN user ON group_user.id_user = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login = "' + message.sender + '"', (err, result) => {
@@ -62,18 +69,10 @@ const tcpServer = net.createServer( function (socket) {
                     }));
                 }
             });
-        } else if (message.type === 'REQ_GROUPONLINE') { //Отправка количества пользователей в сети группы
-            conn.query('SELECT COUNT(user.online) AS cnt FROM `group` INNER JOIN group_user ON `group`.id_group = group_user.id_group INNER JOIN user ON group_user.id_user = user.id_user WHERE `group`.name = "' + message.groupName + '" AND user.online = 1', (err, result) => {
-                socket.write(JSON.stringify({
-                    type: 'REQ_GROUPONLINE_RESULT',
-                    groupOnline: result[0].cnt
-                }));               
-            });
         } else if (message.type === 'REQ_FRIENDSLIST') {
             //
         } else if (message.type === 'REQ_GROUPDATA') {
-            groupData = {};
-            groupData.type = 'REQ_GROUPDATA_RESULT';
+            groupData = {type: 'REQ_GROUPDATA_RESULT'};
             
             conn.query('SELECT login_password.login, group_messages.message, group_messages.send_time FROM group_messages INNER JOIN user ON group_messages.id_sender = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE id_group IN (SELECT `group`.id_group FROM `group` WHERE `group`.name = "' + message.groupName + '")', (err, result) => {
                 groupData.groupMessages = result;
@@ -84,10 +83,6 @@ const tcpServer = net.createServer( function (socket) {
                 socket.write(JSON.stringify(groupData));
             });
 
-        } else if (message.type === 'REQ_DIRECTMESSAGES') {
-            //
-        } else if (message.type === 'REQ_SIGNOUT') {
-            //
         } else if (message.type === 'REQ_USERDATA') {
             conn.query('SELECT personal_data.name, personal_data.last_name, login_password.login FROM user INNER JOIN personal_data ON user.id_personal_data = personal_data.id_personal_data INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE user.id_user =' + socket.userID + ';', (err, result) => {
                 socket.write(JSON.stringify({
@@ -109,6 +104,29 @@ const tcpServer = net.createServer( function (socket) {
                 type: 'REQ_GROUPCREATE_RESULT',
                 inviteCode: inviteCode 
             }))
+        } else if (message.type === 'REQ_FRIENDLIST') {
+            conn.query('SELECT login FROM friend_list INNER JOIN user ON friend_list.id_friend = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE friend_list.id_user = ' + socket.userID + ';', (err, result) => {
+                socket.write(JSON.stringify({
+                    type: 'REQ_FRIENDLIST_RESULT',
+                    friends: result
+                }));
+            });
+        } else if (message.type === 'REQ_FRIENDDATA') {
+            friendData = {type: 'REQ_FRIENDDATA_RESULT'};
+
+            conn.query('SELECT personal_data.name, personal_data.last_name, user.online FROM user INNER JOIN personal_data ON user.id_personal_data = personal_data.id_personal_data INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.friendLogin + '";', (err, result) => {
+                friendData.friendName = result[0].name;
+                friendData.friendLastName = result[0].last_name;
+                friendData.friendStatus = result[0].online;
+            });
+            
+            conn.query('SELECT user.id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.friendLogin + '";', (err, result) => {
+                friendID = result[0].id_user;
+                conn.query('SELECT login_password.login, direct_messages.message, direct_messages.send_time FROM direct_messages INNER JOIN user ON direct_messages.id_sender = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE ((id_sender = ' + socket.userID + ' AND id_receiver = ' + friendID + ') OR (id_sender = ' + friendID + ' AND id_receiver = ' + socket.userID + '));', (err, result) => {
+                    friendData.friendMessages = result;
+                    socket.write(JSON.stringify(friendData));
+                });
+            });
         }
     });
 
