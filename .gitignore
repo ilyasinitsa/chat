@@ -1,1 +1,4 @@
+.gitignore
 node_modules/
+server/voice_messages/
+server/files/

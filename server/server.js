@@ -51,7 +51,7 @@ const tcpServer = net.createServer( function (socket) {
                     });
                 });
             } else {
-                conn.query('INSERT INTO direct_messages SET id_sender = ' + socket.userID + ', id_receiver = SELECT id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.receiver + '"), message = "' + message.content + ', send_time = "' + message.sendTime + '";', (err, result) => {
+                conn.query('INSERT INTO direct_messages SET id_sender = ' + socket.userID + ', id_receiver = (SELECT id_user FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.receiver + '"), message = "' + message.content + '", send_time = "' + message.sendTime + '";', (err, result) => {
                     conn.query('SELECT user.id_user, user.online FROM user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login_password.login = "' + message.receiver + '";', (err, result) => {
                         socket.write(JSON.stringify(message));
                         if (result[0].online === 1) {
@@ -61,7 +61,7 @@ const tcpServer = net.createServer( function (socket) {
                 });
             }
         } else if (message.type === 'REQ_GROUPLIST') { //Отправка списка групп пользователю
-            conn.query('SELECT name FROM `group` INNER JOIN group_user ON `group`.id_group = group_user.id_group INNER JOIN user ON group_user.id_user = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login = "' + message.sender + '"', (err, result) => {
+            conn.query('SELECT name, code FROM `group` INNER JOIN group_user ON `group`.id_group = group_user.id_group INNER JOIN user ON group_user.id_user = user.id_user INNER JOIN login_password ON user.id_login_password = login_password.id_login_password WHERE login = "' + message.sender + '"', (err, result) => {
                 if (Object.keys(result).length != 0) {
                     socket.write(JSON.stringify({
                         type: 'REQ_GROUPLIST_RESULT',
@@ -69,8 +69,39 @@ const tcpServer = net.createServer( function (socket) {
                     }));
                 }
             });
-        } else if (message.type === 'REQ_FRIENDSLIST') {
-            //
+        } else if (message.type === 'REQ_REGISTRATION') {
+            conn.query('SELECT COUNT(*) as cnt FROM personal_data WHERE email ="' + message.email + '"', (err, result) => {
+                if (result[0].cnt === 0) {
+                    conn.query('SELECT COUNT(*) as cnt FROM login_password WHERE login ="' + message.login + '"', (err, result) => {
+                        if (result[0].cnt === 0) {
+                            let personalDataID;
+                            let loginPasswordID;
+                            conn.query('INSERT INTO personal_data SET name ="' + message.name + '", last_name = "' + message.lastName + '", email ="' + message.email + '"', (err, result) => {
+                                personalDataID = result.insertId;
+                                conn.query('INSERT INTO login_password SET login = "' + message.login + '", password = "' + message.password + '"', (err, result) => {
+                                    loginPasswordID = result.insertId;
+                                    conn.query('INSERT INTO user SET id_personal_data = ' + personalDataID + ', id_login_password' + loginPasswordID);
+                                    socket.write(JSON.stringify({
+                                        type: 'REQ_REGISTRATION_RESULT',
+                                        error: 'no'
+                                    }));
+                                });
+                            });
+                        } else {
+                            socket.write(JSON.stringify({
+                                type: 'REQ_REGISTRATION_RESULT',
+                                error: 'login'
+                            }));
+                        } 
+                    });
+                } else {
+                    console.log('email');
+                    socket.write(JSON.stringify({
+                        type: 'REQ_REGISTRATION_RESULT',
+                        error: 'email'
+                    }));
+                }
+            });
         } else if (message.type === 'REQ_GROUPDATA') {
             groupData = {type: 'REQ_GROUPDATA_RESULT'};
             
@@ -98,10 +129,11 @@ const tcpServer = net.createServer( function (socket) {
             });
         } else if (message.type === 'REQ_GROUPCREATE') {
             inviteCode = groupInviteCodeGeneration();
-            conn.query('INSERT INTO `group` SET name ="' + message.groupName + '", code ="' + inviteCode + '", creator = ' + socket.userID + ';');
+            conn.query('INSERT INTO `group` SET name ="' + message.groupName + '", code ="' + inviteCode + '", id_creator = ' + socket.userID + ';');
             conn.query('INSERT INTO group_user SET id_group = (SELECT id_group FROM `group` WHERE code = "' + inviteCode + '"), id_user = ' + socket.userID + ';');
             socket.write(JSON.stringify({
                 type: 'REQ_GROUPCREATE_RESULT',
+                groupName: message.groupName,
                 inviteCode: inviteCode 
             }))
         } else if (message.type === 'REQ_FRIENDLIST') {
@@ -127,6 +159,24 @@ const tcpServer = net.createServer( function (socket) {
                     socket.write(JSON.stringify(friendData));
                 });
             });
+        } else if (message.type === 'REQ_GROUPJOIN') {
+            conn.query('SELECT COUNT(*) AS cnt FROM group_user WHERE id_group = (SELECT id_group FROM `group` WHERE code = "' + message.inviteCode + '") AND id_user = ' + socket.userID, (err, result) => {
+                if (result[0].cnt === 0) {
+                    conn.query('INSERT INTO group_user SET id_group = (SELECT id_group FROM `group` WHERE code = "' + message.inviteCode + '"),id_user =' + socket.userID, (err, result) => {
+                        socket.write(JSON.stringify({
+                            type: 'REQ_GROUPJOIN_RESULT',
+                            error: 'no'
+                        }));    
+                    });
+                } else {
+                    socket.write(JSON.stringify({
+                        type: 'REQ_GROUPJOIN_RESULT',
+                        error: 'already_joined'
+                    }));
+                }
+            });
+        } else if (message.type === 'REQ_GROUPSIGNOUT') {
+            conn.query('DELETE FROM group_user WHERE id_group = (SELECT id_group FROM `group` WHERE name ="' + message.groupName + '") AND id_user = ' + socket.userID);
         }
     });
 
@@ -138,6 +188,12 @@ const tcpServer = net.createServer( function (socket) {
         }
     });
 }).listen(9966, '127.0.0.1', () => console.log('Server is running'));
+
+const fileServer = net.createServer((socket) => {
+    socket.on('end', () => {
+        socket.destroy();
+    });
+}).listen(9967, '127.0.0.1', () => console.log('File server is running'));
 
 const groupInviteCodeGeneration = () => {
     return Math.random().toString(36).substr(2, 8);

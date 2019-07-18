@@ -19,7 +19,7 @@ html, body {
 }
 
 .background {
-  background: linear-gradient(#434b60d5, #434b6088) ,url('../images/background.jpg');
+  background: linear-gradient(#5e6983d5, #434b6088) ,url('../images/background.jpg');
   background-size: cover;
   display: flex;
   flex-direction: column;
@@ -103,9 +103,8 @@ html, body {
   font-size: 80%;
   color: #999999;
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;
   align-items: center;
-  justify-content: space-between;
   grid-area: 3 / 2 / 4 / 3;
 }
 
@@ -168,6 +167,7 @@ html, body {
   font-family: 'Evolve Sans';
   font-weight: normal;
   color: #ffffff;
+  border-radius: 100px;
   /* background: #57b847; */
   background: #5c6885;
   border: none;

@@ -3,11 +3,13 @@ const customTitlebar = require('custom-electron-titlebar');
  
 new customTitlebar.Titlebar({
     menu: false,
-    backgroundColor: customTitlebar.Color.fromHex('#444')
+    backgroundColor: customTitlebar.Color.fromHex('#444'),
+    maximizable: false,
+    minimizable: false
 });
 
 var signInButton = document.getElementById('sign-in');
-var rememberMeCheckbox = document.getElementById('remember-me');
+var register = document.getElementById('register');
 var loginInput = document.getElementById('login-input');
 var passwordInput = document.getElementById('password-input');
 
@@ -20,8 +22,7 @@ signInButton.onclick = () => {
     if (reg.test(loginInput.value) && passwordInput.value != "") {
         ipc.send('login', {
             login: loginInput.value,
-            password: passwordInput.value,
-            autoLogin: rememberMeCheckbox.checked
+            password: passwordInput.value
         });
     }
 }
@@ -30,3 +31,7 @@ ipc.on('login-error', (event, arg) => {
     loginInput.style.borderBottomColor = "#ff0000";
     passwordInput.style.borderBottomColor = "#ff0000";
 });
+
+register.onclick = () => {
+    ipc.send('register-window-create');
+}

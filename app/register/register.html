@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../stylesheets/fonts.css">
+  <title>Регистрация</title>
+  <style>
+    * {
+      font-family: 'Evolve Sans';
+    }
+    h2 {
+      font-family: 'Evolve Sans Evo';
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .registration-wrapper {
+      margin: 0 auto;
+
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+    label, input {
+      margin-bottom: 5px;
+    }
+    .horizontal-spacer {
+      margin: 10px 0px;
+      border-top: 1px solid #aaaaaa;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    input {
+      padding: 0px 5px;
+      outline: none;
+      border: none;
+      box-sizing: border-box;
+      border-radius: 2px;
+      box-shadow: 0 0 5px 0 #888888;
+      height: 20px;
+    }
+    button {
+      outline: none;
+      border: none;
+      background: #5c6885;
+      color: #ffffff;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: 'Evolve Sans';
+      margin-top: 5px;
+      width: 63%;
+      height: 40px;
+      transition: background 0.2s linear;
+    }
+    button:hover {
+      background: #373e50;
+    }
+  </style>
+</head>
+<body>
+  <div class="registration-wrapper">
+    <h2>Регистрация</h2>
+    <span style="color: #555555; text-align: justify">Всего пару полей, и Вы - участник нашего проекта!</span>
+    <div class="horizontal-spacer"></div>
+    <label for="lastName">Фамилия</label>
+    <input type="text" id="lastName">
+    <label for="name">Имя</label>
+    <input type="text" id="name">
+    <label for="e-mail">Электронный адрес</label>
+    <input type="text" id="e-mail">
+    <label for="login">Логин</label>
+    <input type="text" id="login">
+    <label for="password">Пароль</label>
+    <input type="password" id="password">
+    <div class="horizontal-spacer"></div>
+    <button id="register-button">Зарегистрироваться</button>
+  </div>
+  <script src="register.js"></script>
+</body>
+</html>

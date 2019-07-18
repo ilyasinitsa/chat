@@ -99,6 +99,7 @@ body {
 }
 
 .messages-panel {
+  background: #ecf0fa;
   box-sizing: border-box;
   overflow-y: hidden;
   overflow-y: scroll;

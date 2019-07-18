@@ -8,6 +8,7 @@ const BrowserWindow = electron.BrowserWindow;
 let appWindow;
 let loginWindow;
 let tcpClient;
+let fileClient;
 let login;
 
 //Вход в программу
@@ -51,13 +52,7 @@ ipc.on('get-groups', (event, arg) => {
     }));
 });
 
-ipc.on('group-online-get', (event, arg) => {
-    tcpClient.write(JSON.stringify({
-        type: 'REQ_GROUPONLINE',
-        groupName: arg
-    }));
-});
-
+//Запрос на получение списка групп
 ipc.on('group-data-get', (event, arg) => {
     tcpClient.write(JSON.stringify({
         type: 'REQ_GROUPDATA',
@@ -65,12 +60,14 @@ ipc.on('group-data-get', (event, arg) => {
     }));
 });
 
+//Запрос на получение пользовательских данных
 ipc.on('user-data-get', (event, arg) => {
     tcpClient.write(JSON.stringify({
         type: 'REQ_USERDATA'
     }));
 });
 
+//Запрос на сохранение изменений пользовательских данных
 ipc.on('user-data-changes-save', (event, arg) => {
     login = arg.login;
     tcpClient.write(JSON.stringify({
@@ -81,14 +78,16 @@ ipc.on('user-data-changes-save', (event, arg) => {
     }));
 });
 
+//Запрос на создание группы
 ipc.on('group-create', (event, arg) => {
     tcpClient.write(JSON.stringify({
         type: 'REQ_GROUPCREATE',
         groupCreator: login,
-        groupName: arg.groupName
+        groupName: arg
     }));
 });
 
+//Запрос на получение списка друзей
 ipc.on('get-friends', (event, arg) => {
     tcpClient.write(JSON.stringify({
         type: 'REQ_FRIENDLIST',
@@ -96,10 +95,43 @@ ipc.on('get-friends', (event, arg) => {
     }));
 });
 
+//Запрос на получение информации о друге
 ipc.on('friend-data-get', (event, arg) => {
     tcpClient.write(JSON.stringify({
         type: 'REQ_FRIENDDATA',
         friendLogin: arg
+    }));
+});
+
+//Запрос на создание окна регистрации
+ipc.on('register-window-create', event => {
+    registrationWindow = new BrowserWindow({width: 375, height: 500, parent: loginWindow, modal: true, frame: false, maximizable: false, minimizable: false, resizable: false, webPreferences: {nodeIntegration: true}});
+    registrationWindow.loadFile('./app/register/register.html');
+});
+
+//Запрос на регистрацию пользователя
+ipc.on('register', (event, arg) => {
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_REGISTRATION',
+        lastName: arg.lastName,
+        name: arg.name,
+        email: arg.email,
+        login: arg.login,
+        password: arg.password
+    }));
+});
+
+ipc.on('group-join', (event, arg) => {
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_GROUPJOIN',
+        inviteCode: arg
+    }));
+});
+
+ipc.on('group-sign-out', (event, arg) => {
+    tcpClient.write(JSON.stringify({
+        type: 'REQ_GROUPSIGNOUT',
+        groupName: arg
     }));
 });
 
@@ -112,6 +144,7 @@ app.on('ready', () => {
 //Выход из приложения
 app.on('window-all-closed', () => {
     app.quit();
+    // fileClient.end();
     tcpClient.end();
 });
 
@@ -120,7 +153,7 @@ const createWindow = () => {
     splashScreen = new BrowserWindow({width: 350, height: 350, frame: false, show: false, alwaysOnTop: true, webPreferences: {nodeIntegration: true}});
     splashScreen.loadFile('./app/splashscreen/loading.html');
 
-    loginWindow = new BrowserWindow({width: 550, height: 480, frame: false, show: false, maximizable: false, minimizable: false, webPreferences: {nodeIntegration: true}});
+    loginWindow = new BrowserWindow({width: 550, height: 480, frame: false, show: false, maximizable: false, resizable: false, minimizable: false, webPreferences: {nodeIntegration: true}});
     loginWindow.setMenu(null);
 
     loginWindow.loadFile('./app/login/index.html');
@@ -162,11 +195,23 @@ const tcpSetup = () => {
         } else if (message.type === 'REQ_USERDATA_RESULT') {
             appWindow.webContents.send('user-data-display', message);
         } else if (message.type === 'REQ_GROUPCREATE_RESULT') {
-            
+            appWindow.webContents.send('group-invite-code-display', message);
         } else if (message.type === 'REQ_FRIENDLIST_RESULT') {
             appWindow.webContents.send('friends-display', message.friends);
         } else if (message.type === 'REQ_FRIENDDATA_RESULT') {
             appWindow.webContents.send('friend-data-display', message);
+        } else if (message.type === 'REQ_REGISTRATION_RESULT') {
+            if (message.error === 'no') {
+                registrationWindow.destroy();
+            } else {
+                registrationWindow.webContents.send('registration-error', message.error);
+            }
+        } else if (message.type === 'REQ_GROUPJOIN_RESULT') {
+            appWindow.webContents.send('group-join-result', message.error);
         }
     });
 }
+
+// const fileTransferSetup = () => {
+//     fileClient = net.createConnection(9967, '127.0.0.1');
+// }

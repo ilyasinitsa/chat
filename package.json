@@ -4,6 +4,7 @@
   "description": "Chat (TCP/UDP)",
   "main": "./app/main.js",
   "dependencies": {
+    "blob-to-buffer": "^1.2.8",
     "custom-electron-titlebar": "^3.0.8",
     "electron": "^4.1.4",
     "moment": "^2.24.0",

@@ -93,7 +93,8 @@
   justify-self: center;
   width: 200px;
   height: 130px;
-  grid-template-rows: auto 30px;
+  grid-row-gap: 10px;
+  grid-template-rows: auto 30px 30px;
 }
 
 .group-create-icon {
@@ -108,7 +109,7 @@
   font-size: 2rem;
 }
 
-#groupCreateStart {
+#groupCreateStart, #groupJoinStart {
   outline: none;
   cursor: pointer;
   border: none;
